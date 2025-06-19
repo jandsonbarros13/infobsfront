@@ -22,7 +22,7 @@ import { MenuComponent } from './components/menu/menu';
 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { ClienteService } from './services/cliente'; // Certifique-se de que o caminho está correto: ./services/cliente.service ou ./services/cliente
+import { ClienteService } from './services/cliente';
 
 interface ItemMensalidadeExibicao {
   _id: string;
@@ -51,8 +51,6 @@ interface ItemMensalidadeExibicao {
 export class App implements OnInit {
   title = 'front';
 
-  // Caminhos das imagens: ajuste se elas estiverem na pasta 'assets' ou em outro lugar.
-  // Se for 'assets', o caminho seria 'assets/newLogo.jpg'
   appLogoUrl: string = '/public/newLogo.jpg';
   userProfilePhoto: string = '/public/newLogo.jpg';
   userType: 'master' | 'Extrusor' | 'outros' = 'master';
@@ -87,6 +85,7 @@ export class App implements OnInit {
 
   currentPage: number = 1;
   itemsPerPage: number = 10;
+  totalItems: number = 0;
   totalPages: number = 0;
 
   constructor(
@@ -108,101 +107,89 @@ export class App implements OnInit {
     this.carregarLancamentos();
   }
 
-  carregarLancamentos(): void {
-    console.log('Recarregando lançamentos...');
-    this.clienteService.getClientes().subscribe({
-      next: (data) => {
-        this.lancamentos = data.map((lancamento) => ({
-          ...lancamento,
-          vencimento: new Date(lancamento.vencimento),
-        }));
-        console.log('Lançamentos carregados:', this.lancamentos);
-        this.aplicarFiltros();
-      },
-      error: (err: any) => {
-        console.error('Erro ao carregar lançamentos:', err);
-        alert('Erro ao carregar lançamentos. Verifique o console do navegador.');
-      },
-    });
+  async carregarLancamentos(): Promise<void> {
+    console.log(`Recarregando lançamentos para página ${this.currentPage} com ${this.itemsPerPage} itens...`);
+
+    const filtrosAtuais = {
+      nome: this.filtroNome,
+      status: this.filtroStatus,
+      mesVencimento: this.filtroMesVencimento,
+      anoVencimento: this.filtroAnoVencimento,
+      dataInicio: this.filtroDataInicio,
+      dataFim: this.filtroDataFim,
+    };
+
+    try {
+      const response = await this.clienteService.getClientes(this.currentPage, this.itemsPerPage, filtrosAtuais).toPromise();
+
+      // CORREÇÃO: Adicionado o operador '!' para afirmar que 'response' não será indefinido aqui.
+      let fetchedLancamentos: Cliente[] = response!.data.map((lancamento) => ({
+        ...lancamento,
+        vencimento: new Date(lancamento.vencimento),
+      }));
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const updatesPromises: Promise<any>[] = [];
+      let needsReFetch = false;
+
+      fetchedLancamentos.forEach(lancamento => {
+        const vencimentoDate = new Date(lancamento.vencimento);
+        vencimentoDate.setHours(0, 0, 0, 0);
+
+        if (lancamento.status === 'pendente' && vencimentoDate.getTime() < today.getTime()) {
+          lancamento.status = 'vencido';
+          needsReFetch = true;
+
+          updatesPromises.push(
+            this.clienteService.updateCliente(lancamento._id!, { status: 'vencido' } as Cliente).toPromise()
+          );
+        }
+      });
+
+      if (updatesPromises.length > 0) {
+        console.log(`Atualizando status de ${updatesPromises.length} lançamentos para 'vencido' no backend...`);
+        await Promise.all(updatesPromises);
+        console.log('Status de lançamentos atualizados no backend. Recarregando dados para consistência.');
+        return this.carregarLancamentos();
+      }
+
+      // CORREÇÃO: Adicionado o operador '!' para afirmar que 'response' não será indefinido aqui.
+      this.lancamentos = fetchedLancamentos;
+      this.totalItems = response!.totalCount;
+      this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+
+      this.paginatedItems = this.lancamentos.map(lancamento => ({
+        _id: lancamento._id!,
+        nome: lancamento.nome,
+        dataReferencia: lancamento.vencimento,
+        valor: lancamento.valorMensalidade,
+        status: lancamento.status,
+        selecionado: this.lancamentosSelecionadosIds.includes(lancamento._id!),
+        numeroParcela: lancamento.numeroParcela,
+      }));
+
+      console.log(`Lançamentos carregados (página ${this.currentPage} de ${this.totalPages}, total ${this.totalItems}):`, this.paginatedItems);
+
+      if (this.currentPage > this.totalPages && this.totalPages > 0) {
+        this.currentPage = this.totalPages;
+        this.carregarLancamentos();
+      } else if (this.totalItems > 0 && this.totalPages === 0) {
+        this.currentPage = 1;
+        this.carregarLancamentos();
+      } else if (this.totalItems === 0 && this.currentPage !== 1) {
+        this.currentPage = 1;
+      }
+    } catch (err: any) {
+      console.error('Erro ao carregar lançamentos:', err);
+      alert('Erro ao carregar lançamentos. Verifique o console do navegador.');
+    }
   }
 
   aplicarFiltros(): void {
-    let lancamentosFiltrados: ItemMensalidadeExibicao[] = this.lancamentos.map((lancamento) => ({
-      _id: lancamento._id!,
-      nome: lancamento.nome,
-      dataReferencia: lancamento.vencimento,
-      valor: lancamento.valorMensalidade,
-      status: lancamento.status,
-      selecionado: this.lancamentosSelecionadosIds.includes(lancamento._id!),
-      numeroParcela: lancamento.numeroParcela,
-    }));
-
-    if (this.filtroNome) {
-      lancamentosFiltrados = lancamentosFiltrados.filter((item) =>
-        item.nome.toLowerCase().includes(this.filtroNome.toLowerCase())
-      );
-    }
-
-    if (this.filtroStatus) {
-      lancamentosFiltrados = lancamentosFiltrados.filter(
-        (item) => item.status === this.filtroStatus
-      );
-    }
-
-    const hasDateRangeFilter = this.filtroDataInicio && this.filtroDataFim;
-    const hasMonthYearFilter = this.filtroMesVencimento !== null || this.filtroAnoVencimento !== null;
-
-    if (hasDateRangeFilter) {
-      const dataInicio = new Date(this.filtroDataInicio);
-      const dataFim = new Date(this.filtroDataFim);
-      dataFim.setHours(23, 59, 59, 999);
-
-      lancamentosFiltrados = lancamentosFiltrados.filter((item) => {
-        const itemDate = item.dataReferencia;
-        return itemDate >= dataInicio && itemDate <= dataFim;
-      });
-    } else if (hasMonthYearFilter) {
-      if (this.filtroMesVencimento !== null) {
-        lancamentosFiltrados = lancamentosFiltrados.filter(
-          (item) => item.dataReferencia.getMonth() + 1 === this.filtroMesVencimento
-        );
-      }
-
-      if (this.filtroAnoVencimento !== null) {
-        lancamentosFiltrados = lancamentosFiltrados.filter(
-          (item) => item.dataReferencia.getFullYear() === this.filtroAnoVencimento
-        );
-      }
-    }
-
-    this.itensMensalidadeExibicao = lancamentosFiltrados.sort((a, b) => {
-      const dataA = a.dataReferencia.getTime();
-      const dataB = b.dataReferencia.getTime();
-      if (dataA !== dataB) {
-        return dataA - dataB;
-      }
-      if (a.nome < b.nome) return -1;
-      if (a.nome > b.nome) return 1;
-      if (a.numeroParcela !== undefined && b.numeroParcela !== undefined) {
-        return a.numeroParcela - b.numeroParcela;
-      }
-      return 0;
-    });
-
-    this.totalPages = Math.ceil(
-      this.itensMensalidadeExibicao.length / this.itemsPerPage
-    );
-    if (this.currentPage > this.totalPages && this.totalPages > 0) {
-      this.currentPage = this.totalPages;
-    } else if (this.totalPages === 0) {
-      this.currentPage = 1;
-    }
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedItems = this.itensMensalidadeExibicao.slice(
-      startIndex,
-      endIndex
-    );
+    this.currentPage = 1;
+    this.carregarLancamentos();
   }
 
   limparFiltros(): void {
@@ -213,7 +200,7 @@ export class App implements OnInit {
     this.filtroDataInicio = '';
     this.filtroDataFim = '';
     this.currentPage = 1;
-    this.aplicarFiltros();
+    this.carregarLancamentos();
   }
 
   toggleFiltros(): void {
@@ -238,7 +225,7 @@ export class App implements OnInit {
       console.log('Gerando Excel para lançamentos:', this.itensMensalidadeExibicao);
 
       const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(
-        this.itensMensalidadeExibicao.map((item) => ({
+        this.paginatedItems.map((item) => ({
           Nome: item.nome,
           Vencimento: this.formatarData(item.dataReferencia),
           Valor: item.valor.toFixed(2),
@@ -314,6 +301,20 @@ export class App implements OnInit {
     if (lancamentoOriginal) {
       this.lancamentoParaEditar = { ...lancamentoOriginal };
       this.mostrarFormulario = true;
+    } else {
+        console.warn('Lançamento não encontrado na página atual para edição. Tentando buscar no backend...');
+        if (item._id) {
+            this.clienteService.getClienteById(item._id).subscribe({
+                next: (fullLancamento) => {
+                    this.lancamentoParaEditar = fullLancamento;
+                    this.mostrarFormulario = true;
+                },
+                error: (err) => {
+                    console.error('Erro ao buscar lançamento para edição:', err);
+                    alert('Erro ao carregar detalhes do lançamento para edição.');
+                }
+            });
+        }
     }
   }
 
@@ -321,10 +322,10 @@ export class App implements OnInit {
     this.mostrarFormulario = false;
     this.lancamentosSelecionadosIds = [];
     this.carregarLancamentos();
-    // Adicionado reload aqui (apenas no navegador)
-    if (isPlatformBrowser(this.platformId)) {
-      window.location.reload();
-    }
+    // Removido reload de página, pois a lógica de atualização de status e paginação é mais eficiente
+    // if (isPlatformBrowser(this.platformId)) {
+    //   window.location.reload();
+    // }
   }
 
   onCancelarFormulario(): void {
@@ -388,10 +389,10 @@ export class App implements OnInit {
       alert('Status dos lançamentos selecionados atualizados com sucesso!');
       this.lancamentosSelecionadosIds = [];
       this.carregarLancamentos();
-      // Adicionado reload aqui (apenas no navegador)
-      if (isPlatformBrowser(this.platformId)) {
-        window.location.reload();
-      }
+      // Removido reload de página
+      // if (isPlatformBrowser(this.platformId)) {
+      //   window.location.reload();
+      // }
     } catch (error: any) {
       console.error('Erro ao atualizar status dos lançamentos selecionados:', error);
       alert(
@@ -412,11 +413,14 @@ export class App implements OnInit {
           this.lancamentosSelecionadosIds = this.lancamentosSelecionadosIds.filter(
             (id) => id !== item._id
           );
-          this.carregarLancamentos();
-          // Adicionado reload aqui (apenas no navegador)
-          if (isPlatformBrowser(this.platformId)) {
-            window.location.reload();
+          if (this.paginatedItems.length === 1 && this.currentPage > 1) {
+            this.currentPage--;
           }
+          this.carregarLancamentos();
+          // Removido reload de página
+          // if (isPlatformBrowser(this.platformId)) {
+          //   window.location.reload();
+          // }
         },
         error: (err: any) => {
           console.error('Erro ao deletar lançamento:', err);
@@ -450,21 +454,21 @@ export class App implements OnInit {
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.aplicarFiltros();
+      this.carregarLancamentos();
     }
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.aplicarFiltros();
+      this.carregarLancamentos();
     }
   }
 
   prevPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.aplicarFiltros();
+      this.carregarLancamentos();
     }
   }
 }

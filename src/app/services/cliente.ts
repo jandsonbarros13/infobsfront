@@ -3,21 +3,39 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Cliente } from '../models/cliente.model'; // Cliente agora é o modelo de Lançamento
+import { Cliente } from '../models/cliente.model';
+
+// Definir a interface para a resposta paginada
+interface PaginatedResponse {
+  data: Cliente[];
+  totalCount: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClienteService {
-  private apiUrl = 'https://infobs-back-5hoz.vercel.app/api/clientes'; // Continua apontando para a mesma rota
+  private apiUrl = 'https://infobs-back-5hoz.vercel.app/api/clientes';
 
   constructor(private http: HttpClient) { }
 
-  getClientes(): Observable<Cliente[]> { // Busca uma lista de Lançamentos
-    return this.http.get<Cliente[]>(this.apiUrl);
+  // Modificado para aceitar parâmetros de paginação e filtros
+  getClientes(page: number, limit: number, filtros?: any): Observable<PaginatedResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    if (filtros) {
+      for (const key in filtros) {
+        if (filtros.hasOwnProperty(key) && filtros[key] !== null && filtros[key] !== '') {
+          params = params.set(key, filtros[key].toString());
+        }
+      }
+    }
+    return this.http.get<PaginatedResponse>(this.apiUrl, { params: params });
   }
 
-  getClienteById(id: string): Observable<Cliente> { // Busca um único Lançamento
+  getClienteById(id: string): Observable<Cliente> {
     return this.http.get<Cliente>(`${this.apiUrl}/${id}`);
   }
 
@@ -25,31 +43,26 @@ export class ClienteService {
     return this.http.post<Cliente[]>(this.apiUrl, alunoData);
   }
 
-  updateCliente(id: string, lancamento: Cliente): Observable<Cliente> { // Atualiza um Lançamento
+  updateCliente(id: string, lancamento: Cliente): Observable<Cliente> {
     return this.http.put<Cliente>(`${this.apiUrl}/${id}`, lancamento);
   }
 
-  deleteCliente(id: string): Observable<void> { // Deleta um Lançamento
+  deleteCliente(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // --- MÉTODO AJUSTADO: gerarPdfRelatorio para chamar o backend com filtros ---
   gerarPdfRelatorio(filtros?: any): Observable<Blob> {
     let params = new HttpParams();
     if (filtros) {
-      // Adiciona cada filtro como um query parameter se ele tiver um valor
       for (const key in filtros) {
         if (filtros.hasOwnProperty(key) && filtros[key] !== null && filtros[key] !== '') {
           params = params.set(key, filtros[key].toString());
         }
       }
     }
-
-    // Envia os parâmetros na requisição GET
     return this.http.get(`${this.apiUrl}/relatorio/pdf`, {
       responseType: 'blob',
-      params: params // Adiciona os parâmetros aqui
+      params: params
     });
   }
-  // --- FIM DO MÉTODO AJUSTADO ---
 }
