@@ -1,0 +1,132 @@
+/* src/app/components/cliente-form/cliente-form.css */
+
+/*
+  A classe .form-card aqui representa o conteúdo interno do modal.
+  Muitos estilos como background-color, padding, border-radius e box-shadow
+  são definidos em .modal-content no app.css para o próprio modal.
+  Por isso, ajustamos .form-card para não duplicar ou conflitar com eles.
+*/
+.form-card {
+  background-color: transparent; /* Geralmente transparente se o modal-content já tem background */
+  padding: 0; /* Removido padding, pois o modal-content já tem */
+  border-radius: 0; /* Removido border-radius, pois o modal-content já tem */
+  box-shadow: none; /* Removida a sombra, o modal-content já tem */
+  margin: 0; /* Garante que não há margem externa */
+}
+
+/* Título do formulário dentro do modal */
+.form-card h2 {
+  margin-top: 0; /* Remove margem superior padrão */
+  margin-bottom: 1.5rem; /* Espaço abaixo do título */
+  color: #333;
+  text-align: center;
+  font-size: 1.8rem;
+}
+
+/* Agrupamento de campos do formulário */
+.form-group {
+  margin-bottom: 1rem; /* Espaçamento entre cada grupo de label/input */
+}
+
+/* Estilo para as labels dos campos */
+.form-group label {
+  display: block; /* Faz a label ocupar a própria linha */
+  margin-bottom: 0.5rem; /* Espaçamento entre a label e o input */
+  font-weight: bold; /* Deixa a label em negrito */
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* Estilo para todos os inputs de texto, data, número e select */
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group select {
+  width: 100%; /* Faz o input ocupar 100% da largura do pai */
+  padding: 10px 12px; /* Padding interno para o texto */
+  border: 1px solid #ced4da; /* Borda suave */
+  border-radius: 4px; /* Cantos levemente arredondados */
+  font-size: 1rem;
+  box-sizing: border-box; /* Inclui padding e border na largura total */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Animação suave para foco */
+}
+
+/* Estilo de foco para inputs e selects */
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #007bff; /* Borda azul ao focar */
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Sombra azul suave ao focar */
+  outline: none; /* Remove o outline padrão do navegador */
+}
+
+/* Estilo específico para os inputs de nota dentro de .note-input */
+.note-input {
+  margin-bottom: 0.5rem; /* Espaço entre cada input de nota */
+}
+
+.note-input:last-child {
+  margin-bottom: 0; /* Remove margem inferior do último input de nota */
+}
+
+.note-input input {
+  /* Herda os estilos do input geral, mas pode ter ajustes aqui se necessário */
+  margin-top: 0; /* Ajusta margem superior se houver espaçamento extra */
+}
+
+
+/* Ações do formulário (botões Salvar e Cancelar) */
+.form-actions {
+  display: flex; /* Para alinhar os botões lado a lado */
+  justify-content: flex-end; /* Alinha os botões à direita */
+  gap: 10px; /* Espaço entre os botões */
+  margin-top: 2rem; /* Espaço superior para separar dos campos */
+}
+
+/* Estilo base para os botões do formulário */
+.save-button, .cancel-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Animação de hover */
+  min-width: 100px; /* Garante que os botões tenham uma largura mínima */
+}
+
+/* Estilo específico para o botão Salvar */
+.save-button {
+  background-color: #28a745; /* Verde */
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #218838; /* Verde mais escuro no hover */
+  transform: translateY(-1px); /* Efeito sutil ao passar o mouse */
+}
+
+/* Estilo específico para o botão Cancelar */
+.cancel-button {
+  background-color: #6c757d; /* Cinza */
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #5a6268; /* Cinza mais escuro no hover */
+  transform: translateY(-1px); /* Efeito sutil ao passar o mouse */
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 480px) {
+  .form-card h2 {
+    font-size: 1.5rem;
+  }
+  .form-actions {
+    flex-direction: column; /* Botões empilhados em telas muito pequenas */
+    align-items: stretch; /* Estica os botões para a largura total */
+  }
+  .save-button, .cancel-button {
+    min-width: unset; /* Remove a largura mínima para se adaptar */
+    width: 100%; /* Ocupa toda a largura disponível */
+  }
+}

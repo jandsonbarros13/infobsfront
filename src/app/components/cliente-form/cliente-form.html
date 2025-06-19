@@ -1,0 +1,40 @@
+<div class="form-card">
+  <h2>{{ lancamentoParaEdicao ? 'Editar Lançamento' : 'Novo Lançamento' }}</h2> <form (ngSubmit)="salvarCliente()">
+    <div class="form-group">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" [(ngModel)]="novoCliente.nome" name="nome" required>
+    </div>
+
+    <div class="form-group">
+      <label for="vencimento">Vencimento (Dia/Mês/Ano):</label>
+      <input type="date" id="vencimento"
+             [ngModel]="novoCliente.vencimento | date:'yyyy-MM-dd'"
+             (change)="onVencimentoChange($event)"
+             name="vencimento" required>
+    </div>
+
+    <div class="form-group">
+      <label for="valorMensalidade">Valor da Mensalidade:</label>
+      <input type="number" id="valorMensalidade" [(ngModel)]="novoCliente.valorMensalidade" name="valorMensalidade" required min="0">
+    </div>
+
+    <div class="form-group">
+      <label for="status">Status:</label>
+      <select id="status" [(ngModel)]="novoCliente.status" name="status">
+        <option value="pendente">Pendente</option>
+        <option value="pago">Pago</option>
+        <option value="vencido">Vencido</option>
+      </select>
+    </div>
+
+    <div class="form-group" *ngIf="!novoCliente._id">
+      <label for="quantidadeParcelas">Quantidade de Parcelas:</label>
+      <input type="number" id="quantidadeParcelas" [(ngModel)]="novoCliente.quantidadeParcelas" name="quantidadeParcelas" required min="1">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="save-button">Salvar</button>
+      <button type="button" class="cancel-button" (click)="cancelarFormulario()">Cancelar</button>
+    </div>
+  </form>
+</div>

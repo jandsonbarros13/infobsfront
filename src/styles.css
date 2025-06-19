@@ -1,1 +1,40 @@
 /* You can add global styles to this file, and also import other style files */
+/* src/styles.css */
+
+/* Importa uma fonte do Google Fonts para um visual mais moderno */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* Estilos aplicados ao body do HTML (fundo da página) */
+body {
+  margin: 0; /* Remove a margem padrão do body */
+  font-family: 'Roboto', sans-serif; /* Aplica a fonte 'Roboto' como padrão */
+  line-height: 1.6; /* Espaçamento de linha para melhor leitura */
+  color: #333; /* Cor de texto padrão */
+
+  /* Configurações da imagem de fundo */
+  background-image: url('../public/fundo.jpg'); /* <-- ATUALIZE COM O CAMINHO E NOME DA SUA IMAGEM */
+  background-size: cover; /* Faz a imagem cobrir toda a área da viewport */
+  background-position: center center; /* Centraliza a imagem */
+  background-attachment: fixed; /* Fixa a imagem para que ela não role com o conteúdo */
+  background-repeat: no-repeat; /* Evita que a imagem se repita */
+  min-height: 100vh; /* Garante que o body ocupe no mínimo 100% da altura da viewport */
+  display: flex; /* Transforma o body em um container flex para que app-root possa expandir */
+  flex-direction: column; /* Organiza os itens (app-root) em coluna */
+}
+
+/* Garante que o componente raiz da aplicação ocupe todo o espaço disponível */
+app-root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Permite que o app-root ocupe todo o espaço vertical disponível */
+}
+
+/* Alguns resets básicos */
+* {
+  box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura/altura */
+}
+
+button, input, select, textarea {
+  font-family: inherit; /* Garante que os elementos de formulário herdem a fonte */
+  font-size: inherit;
+}

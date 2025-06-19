@@ -1,0 +1,399 @@
+/* src/app/app.css */
+
+/* --- Estilos para o Header da Aplicação (CONTÉM LOGO, TÍTULO E TODOS OS BOTÕES) --- */
+.app-header {
+  background-color: white;
+  padding: 2rem 2.5rem; /* AUMENTADO: Padding superior/inferior e lateral para deixar o header MAIS ALTO */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px; 
+  margin-bottom: 100px;
+}
+
+/* Seção Esquerda do Header (Logo e Título) */
+.app-header .header-left-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Espaçamento entre logo e título */
+  flex-grow: 1; /* Permite que ocupe o espaço para empurrar os outros */
+}
+
+.app-header .logo-link { /* Estilos para o link da logo */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.app-header .app-logo { /* Estilos para a imagem da logo */
+  height: 50px; /* Tamanho da logo */
+  width: auto; /* Mantém a proporção */
+  margin-right: 1rem; /* Espaçamento à direita da logo */
+}
+
+.app-header h1 { /* Título principal da página */
+  margin: 0;
+  font-size: 2.2rem;
+  color: #333;
+  white-space: nowrap; /* Evita que o título quebre */
+}
+
+/* --- Seção Central do Header (TODOS os Botões de Ação) --- */
+.app-header .header-actions-main {
+  display: flex;
+  flex-wrap: wrap; /* Permite que os botões quebrem a linha */
+  gap: 1rem; /* Espaçamento entre os botões */
+  justify-content: center; /* Centraliza os botões horizontalmente */
+  align-items: center;
+  flex-grow: 2; /* Permite que ocupe mais espaço entre as outras seções */
+}
+
+/* Estilos base para todos os botões de ação no header (Cadastro, Confirmar, Filtros, Excel, PDF) */
+.app-header .action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px; /* Padding ajustado para botões do header */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  white-space: nowrap; /* Evita que o texto quebre */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  justify-content: center;
+}
+
+.app-header .action-button fa-icon {
+  font-size: 1.1rem;
+}
+
+/* Estilos específicos para cada botão de ação */
+.app-header .add-button { background-color: #007bff; color: white; }
+.app-header .add-button:hover { background-color: #0056b3; transform: translateY(-2px); }
+
+.app-header .confirm-selected-button { background-color: #28a745; color: white; }
+.app-header .confirm-selected-button:hover:not(:disabled) { background-color: #218838; transform: translateY(-2px); }
+.app-header .confirm-selected-button:disabled { background-color: #cccccc; cursor: not-allowed; opacity: 0.7; transform: translateY(0); box-shadow: none; }
+
+.app-header .toggle-filters-button { background-color: #6c757d; color: white; }
+.app-header .toggle-filters-button:hover { background-color: #5a6268; transform: translateY(-2px); }
+
+.app-header .report-button.excel-button { background-color: #217346; color: white; }
+.app-header .report-button.excel-button:hover { background-color: #1a5c37; transform: translateY(-2px); }
+
+.app-header .report-button.pdf-button { background-color: #dc3545; color: white; }
+.app-header .report-button.pdf-button:hover { background-color: #b52c20; transform: translateY(-2px); }
+
+/* Seção Direita do Header (Foto de Perfil) */
+.app-header .header-right-section {
+  display: flex;
+  align-items: center;
+  margin-left: 1rem; /* Espaçamento à esquerda para separar dos botões */
+}
+
+.app-header .profile-link { /* Estilos para o link da foto de perfil */
+  display: block;
+  border-radius: 50%;
+  overflow: hidden;
+  width: 50px; /* Tamanho da foto de perfil */
+  height: 50px;
+  border: 2px solid #007bff;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.app-header .profile-link:hover {
+  border-color: #0056b3;
+}
+
+.app-header .profile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* Container principal da aplicação (o conteúdo abaixo do header) */
+.container {
+  max-width: 900px;
+  margin: 0 auto 2rem; /* Removendo margem superior, mantendo laterais e inferior */
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 80px - 2rem - 2rem); /* Ajuste min-height: total - header height - margens */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+h2 { /* Título "Todos os Lançamentos" */
+  color: #333;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+
+/* Estilos para o Modal Overlay */
+.modal-overlay {
+  position: fixed; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  z-index: 1000; 
+  padding: 1rem; 
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); 
+  max-width: 550px; 
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  animation: fadeInScale 0.3s ease-out; 
+}
+
+/* Animação para o modal */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Estilos para a Lista de Clientes (ou lançamentos) */
+.client-list-card {
+  background-color: #fff; 
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+.no-clients {
+  text-align: center;
+  color: #777;
+  padding: 2rem;
+  font-style: italic;
+}
+
+
+/* --- Estilos para o Item Individual do Cliente/Lançamento --- */
+.client-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; 
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  background-color: #fefefe;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  flex-wrap: wrap; 
+  position: relative; 
+  padding-left: 3rem; 
+}
+
+.client-item:last-child { margin-bottom: 0; }
+.client-item:hover { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+
+/* Estilo para items selecionados */
+.client-item.selected {
+  border-color: #007bff;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+  background-color: #e6f7ff; 
+}
+
+/* --- Estilos para o Checkbox de Seleção Individual --- */
+.client-selection {
+  position: absolute;
+  left: 1rem; 
+  top: 1.2rem; 
+  z-index: 10; 
+}
+
+.client-selection input[type="checkbox"] {
+  transform: scale(1.5); 
+  cursor: pointer;
+}
+
+
+.client-info {
+  flex-grow: 1;
+  margin-right: 1.5rem; 
+}
+
+.client-info p {
+  margin: 0.4rem 0; 
+  color: #444;
+}
+
+.client-info p strong {
+  color: #222;
+}
+
+.client-actions {
+  display: flex;
+  flex-direction: column; 
+  gap: 8px; 
+  align-items: flex-end; 
+}
+
+/* Estilos para os Botões de Ação INDIVIDUAIS (Editar/Excluir) nos Cards */
+.client-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px; 
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  min-width: 90px; 
+}
+
+.client-actions button fa-icon {
+  font-size: 0.95rem; 
+}
+
+.edit-button {
+  background-color: #ffc107; 
+  color: #333;
+}
+
+.edit-button:hover {
+  background-color: #e0a800;
+  transform: translateY(-1px);
+}
+
+.delete-button {
+  background-color: #dc3545; 
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+  transform: translateY(-1px);
+}
+
+/* Estilos para o Status */
+.status-pago {
+  color: #28a745; 
+  font-weight: bold;
+}
+
+.status-pendente {
+  color: #ffc107; 
+  font-weight: bold;
+}
+
+.status-vencido {
+  color: #dc3545; 
+  font-weight: bold;
+}
+
+/* --- Estilos para a Seção de Filtros --- */
+.filters-section {
+  background-color: #f0f0f0; 
+  padding: 1.2rem 1.5rem; 
+  border-radius: 8px;
+  margin-bottom: 1.5rem; 
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 1.2rem; 
+  justify-content: space-between; 
+  align-items: flex-end; 
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); 
+}
+
+.filter-group {
+  flex: 1 1 calc(50% - 0.6rem); 
+  min-width: 180px; 
+  display: flex; 
+  flex-direction: column;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #555;
+  font-size: 0.9rem;
+  text-transform: uppercase; 
+  letter-spacing: 0.5px;
+}
+
+.filter-group input[type="text"],
+.filter-group input[type="number"],
+.filter-group select {
+  width: 100%;
+  padding: 10px 12px; 
+  border: 1px solid #ced4da;
+  border-radius: 6px; 
+  font-size: 1rem; 
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: #ffffff; 
+}
+
+/* Estilo de foco para os inputs/selects de filtro */
+.filter-group input:focus,
+.filter-group select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25); 
+  outline: none;
+}
+
+
+/* Responsividade básica para filtros em telas menores */
+@media (max-width: 600px) {
+  .filter-group {
+    flex: 1 1 100%; 
+  }
+}
+
+/* Responsividade geral */
+@media (max-width: 768px) {
+  .container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  /* Ajuste para header-actions em telas menores */
+  .app-header {
+    flex-direction: column; 
+    align-items: stretch; 
+    padding: 1rem;
+  }
+  .app-header .header-left-section {
+    flex-direction: column; 
+    align-items: center;
+    margin-bottom: 1rem; 
+  }
+  .app-header h1 {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  .app-header .header-actions-main {
+    flex-direction: column; 
+    align-items: stretch;
+    width: 100%; 
+  }
+  .app-header .action-button {
+    max-width: 100%;
+    width: 100%;
+  }
+}

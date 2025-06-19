@@ -1,0 +1,27 @@
+<div class="header-actions">
+<img ngSrc="newLogo.jpg" alt="Logo da Aplicação" width="100" height="100" class="app-logo">
+  <button class="add-button" (click)="onCadastrarAluno()">
+    <fa-icon [icon]="faPlus"></fa-icon> Cadastro
+  </button>
+
+  <div class="bulk-actions-wrapper">
+    <button
+      class="confirm-selected-button"
+      (click)="onConfirmarSelecionados()"
+      [disabled]="lancamentosSelecionadosCount === 0">
+      <fa-icon [icon]="faCheck"></fa-icon> Confirmar {{ lancamentosSelecionadosCount }}
+    </button>
+  </div>
+
+  <button class="toggle-filters-button" (click)="onToggleFiltros()">
+    <fa-icon [icon]="faSearch"></fa-icon>
+    {{ mostrarFiltros ? 'Ocultar' : 'Exibir' }}
+  </button>
+
+  <button class="report-button excel-button" (click)="onGerarExcel()">
+    <fa-icon [icon]="faFileExcel"></fa-icon> Excel
+  </button>
+  <button class="report-button pdf-button" (click)="onGerarPdf()">
+    <fa-icon [icon]="faFilePdf"></fa-icon> PDF
+  </button>
+</div>
