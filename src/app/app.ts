@@ -22,7 +22,7 @@ import { MenuComponent } from './components/menu/menu';
 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { ClienteService } from './services/cliente';
+import { ClienteService } from './services/cliente'; // Certifique-se de que o caminho está correto: ./services/cliente.service ou ./services/cliente
 
 interface ItemMensalidadeExibicao {
   _id: string;
@@ -51,6 +51,8 @@ interface ItemMensalidadeExibicao {
 export class App implements OnInit {
   title = 'front';
 
+  // Caminhos das imagens: ajuste se elas estiverem na pasta 'assets' ou em outro lugar.
+  // Se for 'assets', o caminho seria 'assets/newLogo.jpg'
   appLogoUrl: string = '/public/newLogo.jpg';
   userProfilePhoto: string = '/public/newLogo.jpg';
   userType: 'master' | 'Extrusor' | 'outros' = 'master';
@@ -75,11 +77,9 @@ export class App implements OnInit {
   filtroNome: string = '';
   filtroStatus: '' | 'pago' | 'pendente' | 'vencido' = '';
 
-  // Filtros por Mês e Ano: Inicializados com o mês e ano atual para serem o padrão ao carregar
   filtroMesVencimento: number | null;
   filtroAnoVencimento: number | null;
 
-  // Filtros de Intervalo de Data: Inicializados com o primeiro e último dia do mês atual
   filtroDataInicio: string = '';
   filtroDataFim: string = '';
 
@@ -93,28 +93,23 @@ export class App implements OnInit {
     private clienteService: ClienteService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Definir os valores padrão no construtor para que já estejam disponíveis no HTML antes de ngOnInit
     const hoje = new Date();
-    this.filtroMesVencimento = hoje.getMonth() + 1; // Mês atual
-    this.filtroAnoVencimento = hoje.getFullYear(); // Ano atual
+    this.filtroMesVencimento = hoje.getMonth() + 1;
+    this.filtroAnoVencimento = hoje.getFullYear();
 
     const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0); // O dia 0 do próximo mês é o último dia do mês atual
+    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
 
     this.filtroDataInicio = this.formatDateForInput(primeiroDiaMes);
     this.filtroDataFim = this.formatDateForInput(ultimoDiaMes);
   }
 
   ngOnInit(): void {
-    // Carrega os lançamentos. A 'aplicarFiltros' será chamada dentro de 'carregarLancamentos'
-    // e usará os valores padrão definidos no construtor.
     this.carregarLancamentos();
   }
 
-  /**
-   * Carrega todos os lançamentos do serviço (API) e inicia o processo de filtragem/paginação.
-   */
   carregarLancamentos(): void {
+    console.log('Recarregando lançamentos...');
     this.clienteService.getClientes().subscribe({
       next: (data) => {
         this.lancamentos = data.map((lancamento) => ({
@@ -122,7 +117,6 @@ export class App implements OnInit {
           vencimento: new Date(lancamento.vencimento),
         }));
         console.log('Lançamentos carregados:', this.lancamentos);
-        // Após carregar, aplica os filtros (que agora usarão os valores padrão ou os inseridos pelo usuário)
         this.aplicarFiltros();
       },
       error: (err: any) => {
@@ -132,12 +126,7 @@ export class App implements OnInit {
     });
   }
 
-  /**
-   * Aplica todos os filtros selecionados pelo usuário nos campos de input
-   * e, em seguida, pagina os resultados para exibição.
-   */
   aplicarFiltros(): void {
-    // 1. Mapeia os lançamentos originais para o formato de exibição
     let lancamentosFiltrados: ItemMensalidadeExibicao[] = this.lancamentos.map((lancamento) => ({
       _id: lancamento._id!,
       nome: lancamento.nome,
@@ -148,7 +137,6 @@ export class App implements OnInit {
       numeroParcela: lancamento.numeroParcela,
     }));
 
-    // 2. Aplica os filtros de texto e status
     if (this.filtroNome) {
       lancamentosFiltrados = lancamentosFiltrados.filter((item) =>
         item.nome.toLowerCase().includes(this.filtroNome.toLowerCase())
@@ -161,21 +149,19 @@ export class App implements OnInit {
       );
     }
 
-    // 3. Lógica de filtro por Intervalo de Data (tem precedência se preenchido)
     const hasDateRangeFilter = this.filtroDataInicio && this.filtroDataFim;
     const hasMonthYearFilter = this.filtroMesVencimento !== null || this.filtroAnoVencimento !== null;
 
     if (hasDateRangeFilter) {
       const dataInicio = new Date(this.filtroDataInicio);
       const dataFim = new Date(this.filtroDataFim);
-      dataFim.setHours(23, 59, 59, 999); // Inclui o dia inteiro
+      dataFim.setHours(23, 59, 59, 999);
 
       lancamentosFiltrados = lancamentosFiltrados.filter((item) => {
         const itemDate = item.dataReferencia;
         return itemDate >= dataInicio && itemDate <= dataFim;
       });
     } else if (hasMonthYearFilter) {
-      // Aplica filtro por Mês/Ano apenas se o filtro de intervalo de data não estiver ativo
       if (this.filtroMesVencimento !== null) {
         lancamentosFiltrados = lancamentosFiltrados.filter(
           (item) => item.dataReferencia.getMonth() + 1 === this.filtroMesVencimento
@@ -189,7 +175,6 @@ export class App implements OnInit {
       }
     }
 
-    // 4. Ordena os lançamentos filtrados
     this.itensMensalidadeExibicao = lancamentosFiltrados.sort((a, b) => {
       const dataA = a.dataReferencia.getTime();
       const dataB = b.dataReferencia.getTime();
@@ -204,7 +189,6 @@ export class App implements OnInit {
       return 0;
     });
 
-    // 5. Lógica de Paginação
     this.totalPages = Math.ceil(
       this.itensMensalidadeExibicao.length / this.itemsPerPage
     );
@@ -221,28 +205,20 @@ export class App implements OnInit {
     );
   }
 
-  /**
-   * Limpa todos os campos de filtro e reaplica os filtros para mostrar todos os produtos.
-   */
   limparFiltros(): void {
     this.filtroNome = '';
     this.filtroStatus = '';
-    this.filtroMesVencimento = null; // Limpa o filtro de mês
-    this.filtroAnoVencimento = null; // Limpa o filtro de ano
-    this.filtroDataInicio = ''; // Limpa o filtro de data início
-    this.filtroDataFim = ''; // Limpa o filtro de data fim
-    this.currentPage = 1; // Volta para a primeira página
-    this.aplicarFiltros(); // Reaplica os filtros (agora vazios) para mostrar todos os itens
+    this.filtroMesVencimento = null;
+    this.filtroAnoVencimento = null;
+    this.filtroDataInicio = '';
+    this.filtroDataFim = '';
+    this.currentPage = 1;
+    this.aplicarFiltros();
   }
 
-  /**
-   * Alterna a visibilidade da seção de filtros na interface.
-   */
   toggleFiltros(): void {
     this.mostrarFiltros = !this.mostrarFiltros;
   }
-
-  // --- Métodos de Ação do Menu e Formulário ---
 
   onCadastrarAlunoAction(): void {
     this.abrirFormularioCadastro();
@@ -294,7 +270,6 @@ export class App implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       console.log('Solicitando PDF ao backend com filtros.');
 
-      // Coleta os valores dos filtros atuais
       const filtrosAtuais = {
         nome: this.filtroNome,
         status: this.filtroStatus,
@@ -304,13 +279,12 @@ export class App implements OnInit {
         dataFim: this.filtroDataFim,
       };
 
-      // Passa os filtros para o serviço
       this.clienteService.gerarPdfRelatorio(filtrosAtuais).subscribe({
         next: (blob: Blob) => {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.target = '_blank'; // Abre em nova aba
+          a.target = '_blank';
 
           document.body.appendChild(a);
           a.click();
@@ -347,6 +321,10 @@ export class App implements OnInit {
     this.mostrarFormulario = false;
     this.lancamentosSelecionadosIds = [];
     this.carregarLancamentos();
+    // Adicionado reload aqui (apenas no navegador)
+    if (isPlatformBrowser(this.platformId)) {
+      window.location.reload();
+    }
   }
 
   onCancelarFormulario(): void {
@@ -410,6 +388,10 @@ export class App implements OnInit {
       alert('Status dos lançamentos selecionados atualizados com sucesso!');
       this.lancamentosSelecionadosIds = [];
       this.carregarLancamentos();
+      // Adicionado reload aqui (apenas no navegador)
+      if (isPlatformBrowser(this.platformId)) {
+        window.location.reload();
+      }
     } catch (error: any) {
       console.error('Erro ao atualizar status dos lançamentos selecionados:', error);
       alert(
@@ -431,6 +413,10 @@ export class App implements OnInit {
             (id) => id !== item._id
           );
           this.carregarLancamentos();
+          // Adicionado reload aqui (apenas no navegador)
+          if (isPlatformBrowser(this.platformId)) {
+            window.location.reload();
+          }
         },
         error: (err: any) => {
           console.error('Erro ao deletar lançamento:', err);
@@ -442,8 +428,6 @@ export class App implements OnInit {
       });
     }
   }
-
-  // --- Métodos de Formatação de Data ---
 
   formatarData(date: Date): string {
     if (!date) return '';
@@ -462,8 +446,6 @@ export class App implements OnInit {
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
-
-  // --- Métodos de Paginação ---
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {

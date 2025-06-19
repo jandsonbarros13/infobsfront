@@ -9,7 +9,7 @@ import { Cliente } from '../models/cliente.model'; // Cliente agora é o modelo 
   providedIn: 'root'
 })
 export class ClienteService {
-  private apiUrl = 'http://localhost:3000/api/clientes'; // Continua apontando para a mesma rota
+  private apiUrl = 'https://infobs-back-5hoz.vercel.app/api/clientes'; // Continua apontando para a mesma rota
 
   constructor(private http: HttpClient) { }
 
