@@ -15,7 +15,7 @@ interface PaginatedResponse {
   providedIn: 'root'
 })
 export class ClienteService {
-  private apiUrl = 'https://infobs-back-5hoz.vercel.app/api/clientes';
+  private apiUrl = 'https://infobs-back-vujs.vercel.app/api/clientes';
 
   constructor(private http: HttpClient) { }
 
